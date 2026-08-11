@@ -1,0 +1,21 @@
+{
+  "name": "fedramp-20x-operations-park",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run validate:content && vite build",
+    "preview": "vite preview",
+    "lint": "node --check src/main.js && node --check src/content.js && node --check scripts/validate-content.mjs",
+    "validate:content": "node scripts/validate-content.mjs",
+    "extract:source": "node scripts/extract-source-data.mjs",
+    "test": "npm run validate:content && node --test tests/unit/*.test.mjs",
+    "test:e2e": "playwright test",
+    "test:all": "npm run lint && npm run test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "vite": "^7.1.1"
+  }
+}
