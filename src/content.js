@@ -579,6 +579,13 @@ export const CHANGE_SCENARIOS = [
     result: 'Transformative',
     timing: 'MUST notify 30 business days before initial work, 10 before final plans, and again after completion and verification.',
   },
+  {
+    id: 'emergency',
+    label: 'Contain an active compromise',
+    detail: 'An urgent security event requires a significant service change before advance-notification steps can be completed.',
+    result: 'Emergency',
+    timing: 'MAY execute first; MUST follow relevant procedures, notify necessary parties, provide materials retroactively, and complete appropriate assessment after the incident.',
+  },
 ];
 
 export function sourcesFor(scene) {

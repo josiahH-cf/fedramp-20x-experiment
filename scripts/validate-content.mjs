@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  CHANGE_SCENARIOS,
   INCIDENT_CLOCKS,
   KSI_CORRECTIONS,
   REMEDIATION,
@@ -10,6 +11,14 @@ import {
   SOURCES,
   VERIFIED_ON,
 } from '../src/content.js';
+import {
+  CAPSTONE,
+  GLOSSARY,
+  MODULES,
+  SCENE_LEARNING,
+  moduleForScene,
+  readingDurationMs,
+} from '../src/learning.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -91,6 +100,30 @@ for (const scene of SCENES) {
   for (const sourceId of scene.sourceIds) assert.ok(SOURCES.some((item) => item.id === sourceId), `${scene.id} has unknown source ${sourceId}.`);
 }
 
+assert.equal(MODULES.length, 5, 'The novice journey must expose exactly five top-level modules.');
+assert.deepEqual(MODULES.flatMap((module) => module.sceneIds), expectedSceneOrder, 'Five-module grouping must preserve deterministic scene order exactly.');
+assert.equal(new Set(MODULES.flatMap((module) => module.sceneIds)).size, SCENES.length, 'Every deterministic scene must belong to exactly one module.');
+for (const module of MODULES) {
+  assert.ok(module.title && module.objective && module.promise, `${module.id} needs a complete novice-facing purpose.`);
+  assert.ok(module.sceneIds.length >= 2, `${module.id} needs a meaningful sequence.`);
+  assert.equal(module.check.options.filter((option) => option.id === module.check.correct).length, 1, `${module.id} needs one valid check answer.`);
+}
+for (const scene of SCENES) {
+  const learning = SCENE_LEARNING[scene.id];
+  assert.ok(learning?.question && learning?.plainTitle && learning?.plainEnglish && learning?.tryTitle, `${scene.id} needs the complete novice learning pattern.`);
+  assert.ok(learning.terms.every((id) => GLOSSARY[id]), `${scene.id} refers to an unknown first-use definition.`);
+  assert.ok(moduleForScene(scene.id), `${scene.id} needs a parent module.`);
+}
+assert.equal(CAPSTONE.length, 3, 'The synthesis scenario must connect three realistic decisions.');
+assert.ok(CAPSTONE.every((item) => item.options.some((option) => option.id === item.correct)), 'Every capstone decision needs one valid answer.');
+assert.ok(readingDurationMs('A concise explanation for a new learner.') >= 9000, 'First-visit reading dwell must not be too short.');
+assert.ok(readingDurationMs('A concise explanation for a returning learner.', { replay: true }) < readingDurationMs('A concise explanation for a returning learner.'), 'Completed explanations must replay faster.');
+
+assert.deepEqual(CHANGE_SCENARIOS.map((scenario) => scenario.id), ['patch', 'region', 'identity', 'emergency'], 'Practice must cover every significant-change path, including emergency work.');
+const emergencyChange = CHANGE_SCENARIOS.find((scenario) => scenario.id === 'emergency');
+assert.match(emergencyChange.timing, /MAY execute first/);
+assert.match(emergencyChange.timing, /MUST/);
+
 const laneMap = { internet: 'irv_lev', internal: 'nirv_lev', unlikely: 'nlev' };
 const unitMap = { hours: 'hours', days: 'days', bizdays: 'business days', months: 'months' };
 const formatTime = ({ num, type }) => `${num} ${num === 1 ? unitMap[type].replace(/s$/, '') : unitMap[type]}`;
@@ -133,3 +166,4 @@ console.log('Content validation passed:');
 console.log(`  ${source.rulesets.length} rulesets / ${explicitRules.length} explicit statements / ${source.glossary.length} terms`);
 console.log(`  ${source.ksi.length} KSI families / ${source.ksi.reduce((sum, family) => sum + family.indicators.length, 0)} indicators / ${source.schemas.length} schemas`);
 console.log(`  ${SCENES.length} ordered scenes with deterministic matrices verified against the preserved source`);
+console.log(`  ${MODULES.length} novice modules / ${Object.keys(GLOSSARY).length} inline definitions / ${CAPSTONE.length} capstone decisions`);
