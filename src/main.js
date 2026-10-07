@@ -196,12 +196,15 @@ function renderApp() {
     updateTransport();
     if (state.playback === 'playing' && !learner.preferences.manualReading) startTimer();
   } else if (window.location.hash === '#training-songs') {
-    window.requestAnimationFrame(() => {
+    const scrollToSongs = () => window.requestAnimationFrame(() => {
       const section = $('#training-songs');
       if (!section || window.location.hash !== '#training-songs') return;
-      section.scrollIntoView({ block: 'start', behavior: learner.preferences.reducedMotion ? 'instant' : 'smooth' });
       section.focus({ preventScroll: true });
+      section.scrollIntoView({ block: 'start', behavior: learner.preferences.reducedMotion ? 'instant' : 'smooth' });
     });
+    // Finish initial page loading before positioning the dynamically rendered anchor.
+    if (document.readyState === 'complete') scrollToSongs();
+    else window.addEventListener('load', scrollToSongs, { once: true });
   }
 }
 

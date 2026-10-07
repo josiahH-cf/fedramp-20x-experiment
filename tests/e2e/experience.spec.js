@@ -99,8 +99,13 @@ test('training songs support keyboard access, visible focus, and labelled extern
 });
 
 test('training songs deep links preserve saved learning and resume the last scene', async ({ page }) => {
+  await page.goto('about:blank');
   await page.goto('./#training-songs');
   await expect(page.locator('#training-songs')).toBeFocused();
+  for (const link of await page.locator('#training-songs a').all()) await expect(link).toBeInViewport({ ratio: 1 });
+  await page.reload();
+  await expect(page.locator('#training-songs')).toBeFocused();
+  for (const link of await page.locator('#training-songs a').all()) await expect(link).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: 'Start guided tour' })).toBeEnabled();
   await startTour(page);
   await enterModule(page, 'How a security claim becomes proof');
@@ -113,6 +118,7 @@ test('training songs deep links preserve saved learning and resume the last scen
   expect(await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'))).toBe(saved);
   await page.reload();
   await expect(page.locator('#training-songs')).toBeFocused();
+  for (const link of await page.locator('#training-songs a').all()) await expect(link).toBeInViewport({ ratio: 1 });
   expect(await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'))).toBe(saved);
   await page.getByRole('button', { name: /Resume learning/ }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Build an evidence chain' })).toBeVisible();
