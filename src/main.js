@@ -195,6 +195,13 @@ function renderApp() {
     markSceneVisited();
     updateTransport();
     if (state.playback === 'playing' && !learner.preferences.manualReading) startTimer();
+  } else if (window.location.hash === '#training-songs') {
+    window.requestAnimationFrame(() => {
+      const section = $('#training-songs');
+      if (!section || window.location.hash !== '#training-songs') return;
+      section.scrollIntoView({ block: 'start', behavior: learner.preferences.reducedMotion ? 'instant' : 'smooth' });
+      section.focus({ preventScroll: true });
+    });
   }
 }
 
@@ -217,6 +224,7 @@ function renderWelcome() {
         ${canResume ? `<button class="primary-action" data-action="resume-learning">Resume learning${icon('next')}</button>` : `<button class="primary-action" data-action="start-tour">Start guided tour${icon('next')}</button>`}
         ${canResume ? '<button class="secondary-action" data-action="start-tour">Start guided tour</button>' : ''}
         <button class="secondary-action" data-action="explore-modules">Explore modules</button>
+        <a class="training-songs-jump" href="#training-songs">Training songs</a>
       </div>
       <div class="learning-promise" aria-label="What you will understand">
         <strong>By the end, you can explain:</strong>
@@ -228,6 +236,20 @@ function renderWelcome() {
         </ul>
       </div>
       <p class="welcome-note">Educational simulation. The preserved rules and current official guidance remain authoritative.</p>
+      <section class="training-songs" id="training-songs" aria-labelledby="training-songs-title" tabindex="-1">
+        <h2 id="training-songs-title">Training songs</h2>
+        <p class="training-songs-intro">These owner-published songs are optional companions to this learning resource. They are supplemental training aids, not authoritative FedRAMP guidance.</p>
+        <ul class="training-song-list">
+          <li>
+            <a class="training-song-link" href="https://suno.com/s/VY1YhApD3HSBITsO" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-rap-description"><strong>FedRAMP 20x Rap</strong><span>Listen on Suno — opens in a new tab</span></a>
+            <p id="training-song-rap-description">A rap about FedRAMP 20x roles, security claims, and evidence.</p>
+          </li>
+          <li>
+            <a class="training-song-link" href="https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-pain-description"><strong>PAIN Rating Country Mix</strong><span>Listen on Suno — opens in a new tab</span></a>
+            <p id="training-song-pain-description">A country song about evaluating vulnerabilities and potential agency impact.</p>
+          </li>
+        </ul>
+      </section>
     </div>
     <div class="welcome-world" aria-label="Preview of the five-module assurance campus">
       <div class="welcome-world-label"><span>One service</span><strong>Five connected modules</strong></div>
@@ -1281,6 +1303,12 @@ function handleWheel(event) {
 function handleHashChange() {
   const hash = window.location.hash.slice(1);
   if (!hash) return;
+  if (hash === 'training-songs') {
+    pausePlayback('paused');
+    state.screen = 'welcome';
+    renderApp();
+    return;
+  }
   const moduleId = hash.startsWith('module-') ? hash.slice(7) : '';
   if (moduleId && MODULES.some((module) => module.id === moduleId)) {
     const module = MODULES.find((item) => item.id === moduleId);

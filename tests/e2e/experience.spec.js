@@ -49,6 +49,75 @@ test('resume flow and versioned local progress survive a return visit', async ({
   expect(saved.lastSceneId).toBe('evidence');
 });
 
+test('training songs are optional homepage companions with the published titles and destinations', async ({ page }) => {
+  const songs = page.getByRole('region', { name: 'Training songs', exact: true });
+  await expect(songs.getByRole('heading', { name: 'Training songs', level: 2 })).toBeVisible();
+  await expect(songs.getByText('These owner-published songs are optional companions to this learning resource. They are supplemental training aids, not authoritative FedRAMP guidance.')).toBeVisible();
+  await expect(songs.getByRole('link', { name: /FedRAMP 20x Rap/ })).toHaveAttribute('href', 'https://suno.com/s/VY1YhApD3HSBITsO');
+  await expect(songs.getByRole('link', { name: /PAIN Rating Country Mix/ })).toHaveAttribute('href', 'https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED');
+  await expect(songs.getByText('A rap about FedRAMP 20x roles, security claims, and evidence.')).toBeVisible();
+  await expect(songs.getByText('A country song about evaluating vulnerabilities and potential agency impact.')).toBeVisible();
+  await expect(songs.getByRole('link')).toHaveCount(2);
+  for (const link of await songs.getByRole('link').all()) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', /\bnoopener\b/);
+    await expect(link).toHaveAttribute('rel', /\bnoreferrer\b/);
+    await expect(link).toContainText('Listen on Suno — opens in a new tab');
+  }
+  await expect(page.getByRole('button', { name: 'Start guided tour' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Explore modules' })).toBeEnabled();
+  expect(await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'))).toBeNull();
+});
+
+test('training songs support keyboard access, visible focus, and labelled external tabs', async ({ page, context }) => {
+  // Test the site's navigation without depending on Suno's availability or redirects.
+  await context.route('https://suno.com/**', (route) => route.fulfill({
+    status: 200, contentType: 'text/html', body: '<title>External song destination</title>',
+  }));
+  await page.getByRole('button', { name: 'Explore modules' }).focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Training songs', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#training-songs$/);
+  const songs = page.locator('#training-songs');
+  await expect(songs).toBeFocused();
+  const headerBottom = await page.locator('.app-header').evaluate((element) => element.getBoundingClientRect().bottom);
+  await expect.poll(() => songs.evaluate((element) => element.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
+  for (const destination of ['https://suno.com/s/VY1YhApD3HSBITsO', 'https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED']) {
+    await page.keyboard.press('Tab');
+    const link = songs.locator(`a[href="${destination}"]`);
+    await expect(link).toBeFocused();
+    await expect(link).toBeInViewport({ ratio: 1 });
+    const focusStyle = await link.evaluate((element) => ({ style: getComputedStyle(element).outlineStyle, width: getComputedStyle(element).outlineWidth }));
+    expect(focusStyle).toEqual({ style: 'solid', width: '3px' });
+    const popupPromise = page.waitForEvent('popup');
+    await page.keyboard.press('Enter');
+    const popup = await popupPromise;
+    await expect(popup).toHaveURL(destination);
+    await popup.close();
+  }
+});
+
+test('training songs deep links preserve saved learning and resume the last scene', async ({ page }) => {
+  await page.goto('./#training-songs');
+  await expect(page.locator('#training-songs')).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Start guided tour' })).toBeEnabled();
+  await startTour(page);
+  await enterModule(page, 'How a security claim becomes proof');
+  const saved = await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'));
+  await page.goto('./#training-songs');
+  await expect(page.locator('.workspace')).toHaveCount(0);
+  await expect(page.locator('#training-songs')).toBeFocused();
+  await expect(page.getByRole('button', { name: /Resume learning/ })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Start guided tour' })).toBeEnabled();
+  expect(await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'))).toBe(saved);
+  await page.reload();
+  await expect(page.locator('#training-songs')).toBeFocused();
+  expect(await page.evaluate(() => localStorage.getItem('fedramp-20x-learning-progress'))).toBe(saved);
+  await page.getByRole('button', { name: /Resume learning/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Build an evidence chain' })).toBeVisible();
+});
+
 test('five-module journey preserves open navigation and scene/module deep links', async ({ page }) => {
   await startTour(page);
   await expect(page.locator('.module-route-button')).toHaveCount(5);
@@ -292,6 +361,14 @@ test('mobile composition is readable, touch-friendly, overflow-free, and uses a 
   await page.reload();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   expect(await page.locator('.welcome-lede').evaluate((element) => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(16);
+  await page.getByRole('link', { name: 'Training songs', exact: true }).click();
+  for (const link of await page.locator('#training-songs a').all()) {
+    await expect(link).toBeInViewport({ ratio: 1 });
+    const box = await link.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(320);
+  }
   await startTour(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   for (const name of ['Previous step', 'Pause', 'Next step']) {
