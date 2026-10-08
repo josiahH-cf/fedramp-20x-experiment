@@ -244,12 +244,16 @@ function renderWelcome() {
         <p class="training-songs-intro">These owner-published songs are optional companions to this learning resource. They are supplemental training aids, not authoritative FedRAMP guidance.</p>
         <ul class="training-song-list">
           <li>
-            <a class="training-song-link" href="https://suno.com/s/VY1YhApD3HSBITsO" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-rap-description"><strong>FedRAMP 20x Rap</strong><span>Listen on Suno — opens in a new tab</span></a>
-            <p id="training-song-rap-description">A rap about FedRAMP 20x roles, security claims, and evidence.</p>
+            <a class="training-song-link" href="https://suno.com/s/F49DXLLCHRT2mMBT" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-ver-description"><strong>VER - VDR - PAIN</strong><span>Listen on Suno — opens in a new tab</span></a>
+            <p id="training-song-ver-description">A country song about vulnerability detection, evaluation, reporting, and potential agency impact.</p>
           </li>
           <li>
-            <a class="training-song-link" href="https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-pain-description"><strong>PAIN Rating Country Mix</strong><span>Listen on Suno — opens in a new tab</span></a>
-            <p id="training-song-pain-description">A country song about evaluating vulnerabilities and potential agency impact.</p>
+            <a class="training-song-link" href="https://suno.com/s/IgzdrqUydhu3qOKT" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-transition-description"><strong>FedRAMP Rev 5 to FedRAMP 20x Transition</strong><span>Listen on Suno — opens in a new tab</span></a>
+            <p id="training-song-transition-description">A rap about FedRAMP 20x roles, security claims, and keeping evidence current.</p>
+          </li>
+          <li>
+            <a class="training-song-link" href="https://suno.com/s/KV8a7GwTXS6U7nuV" target="_blank" rel="noopener noreferrer" aria-describedby="training-song-remix-description"><strong>FedRAMP Rev 5 to FedRAMP 20x Transition - Remix</strong><span>Listen on Suno — opens in a new tab</span></a>
+            <p id="training-song-remix-description">A remix of the transition song, with the same focus on roles, claims, and evidence.</p>
           </li>
         </ul>
       </section>

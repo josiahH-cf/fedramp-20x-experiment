@@ -53,11 +53,13 @@ test('training songs are optional homepage companions with the published titles 
   const songs = page.getByRole('region', { name: 'Training songs', exact: true });
   await expect(songs.getByRole('heading', { name: 'Training songs', level: 2 })).toBeVisible();
   await expect(songs.getByText('These owner-published songs are optional companions to this learning resource. They are supplemental training aids, not authoritative FedRAMP guidance.')).toBeVisible();
-  await expect(songs.getByRole('link', { name: /FedRAMP 20x Rap/ })).toHaveAttribute('href', 'https://suno.com/s/VY1YhApD3HSBITsO');
-  await expect(songs.getByRole('link', { name: /PAIN Rating Country Mix/ })).toHaveAttribute('href', 'https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED');
-  await expect(songs.getByText('A rap about FedRAMP 20x roles, security claims, and evidence.')).toBeVisible();
-  await expect(songs.getByText('A country song about evaluating vulnerabilities and potential agency impact.')).toBeVisible();
-  await expect(songs.getByRole('link')).toHaveCount(2);
+  await expect(songs.getByRole('link', { name: 'VER - VDR - PAIN Listen on Suno — opens in a new tab', exact: true })).toHaveAttribute('href', 'https://suno.com/s/F49DXLLCHRT2mMBT');
+  await expect(songs.getByRole('link', { name: 'FedRAMP Rev 5 to FedRAMP 20x Transition Listen on Suno — opens in a new tab', exact: true })).toHaveAttribute('href', 'https://suno.com/s/IgzdrqUydhu3qOKT');
+  await expect(songs.getByRole('link', { name: 'FedRAMP Rev 5 to FedRAMP 20x Transition - Remix Listen on Suno — opens in a new tab', exact: true })).toHaveAttribute('href', 'https://suno.com/s/KV8a7GwTXS6U7nuV');
+  await expect(songs.getByText('A country song about vulnerability detection, evaluation, reporting, and potential agency impact.')).toBeVisible();
+  await expect(songs.getByText('A rap about FedRAMP 20x roles, security claims, and keeping evidence current.')).toBeVisible();
+  await expect(songs.getByText('A remix of the transition song, with the same focus on roles, claims, and evidence.')).toBeVisible();
+  await expect(songs.getByRole('link')).toHaveCount(3);
   for (const link of await songs.getByRole('link').all()) {
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', /\bnoopener\b/);
@@ -83,7 +85,7 @@ test('training songs support keyboard access, visible focus, and labelled extern
   await expect(songs).toBeFocused();
   const headerBottom = await page.locator('.app-header').evaluate((element) => element.getBoundingClientRect().bottom);
   await expect.poll(() => songs.evaluate((element) => element.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
-  for (const destination of ['https://suno.com/s/VY1YhApD3HSBITsO', 'https://suno.com/song/8ed88711-1ca6-495b-bd83-7b1358bb8a26?sh=cGOHlOnIjoOKmoED']) {
+  for (const destination of ['https://suno.com/s/F49DXLLCHRT2mMBT', 'https://suno.com/s/IgzdrqUydhu3qOKT', 'https://suno.com/s/KV8a7GwTXS6U7nuV']) {
     await page.keyboard.press('Tab');
     const link = songs.locator(`a[href="${destination}"]`);
     await expect(link).toBeFocused();
